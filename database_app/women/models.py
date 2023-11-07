@@ -1,4 +1,6 @@
 from django.db import models
+from django.urls import reverse
+
 from modules.services.utils import unique_slugify
 
 
@@ -20,6 +22,9 @@ class Women(models.Model):
             self.slug = unique_slugify(self, self.title)
         super().save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        return reverse('post', kwargs={'post_id': self.pk})
+
     class Meta:
         verbose_name = 'Известные женщины'
         verbose_name_plural = 'Известные женщины'
@@ -37,6 +42,9 @@ class Category(models.Model):
         if not self.slug:
             self.slug = unique_slugify(self, self.name)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('category', kwargs={'cat_id': self.pk})
 
     class Meta:
         verbose_name = 'Категория'
