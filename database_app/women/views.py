@@ -1,5 +1,5 @@
 from django.http import HttpResponse, Http404
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from .models import *
 
@@ -44,8 +44,8 @@ def login(request):
     return HttpResponse("Авторизация")
 
 
-def show_category(request, cat_id):
-    posts = Women.objects.filter(cat_id=cat_id)
+def show_category(request, cat_slug):
+    posts = Women.objects.filter(cat__slug=cat_slug)
     # cats = Category.objects.all()
 
     if len(posts) == 0:
@@ -56,10 +56,18 @@ def show_category(request, cat_id):
         # 'cats': cats,
         'menu': menu,
         'title': 'Отображение по рубрикам',
-        'cat_selected': cat_id,
+        'cat_selected': posts[0].cat_id,
     }
     return render(request, 'women/index.html', context)
 
 
-def show_post(request, post_id):
-    return HttpResponse(f"Отображение статьи с id = {post_id}")
+def show_post(request, post_slug):
+    post = get_object_or_404(Women, slug=post_slug)
+
+    context = {
+        'post': post,
+        'menu': menu,
+        'title': post.title,
+        'cat_selected': post.cat_id,
+    }
+    return render(request, 'women/post.html', context)
