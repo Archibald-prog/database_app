@@ -8,6 +8,6 @@ urlpatterns = [
     path('addpage/', addpage, name='add_page'),  # http://127.0.0.1:8000/addpage/
     path('contact/', contact, name='contact'),   # http://127.0.0.1:8000/contact/
     path('login/', login, name='login'),  # http://127.0.0.1:8000/login/
-    path('post/<int:post_id>/', show_post, name='post'),   # http://127.0.0.1:8000/post/2/
-    path('cats/<int:cat_id>/', show_category, name='category'),   # http://127.0.0.1:8000/cats/2/
+    path('post/<slug:post_slug>/', show_post, name='post'),   # http://127.0.0.1:8000/post/madonna/
+    path('cats/<slug:cat_slug>/', show_category, name='category'),   # http://127.0.0.1:8000/cats/aktrisyi/
 ]
