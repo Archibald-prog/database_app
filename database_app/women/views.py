@@ -2,32 +2,23 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import *
 from .forms import AddPostForm
 
-# from modules.services.utils import ObjectListMixin
-
-menu = [{'title': "О сайте", 'url_name': 'about'},
-        {'title': "Добавить статью", 'url_name': 'add_page'},
-        {'title': "Обратная связь", 'url_name': 'contact'},
-        {'title': "Войти", 'url_name': 'login'}
-        ]
+from modules.services.utils import DataMixin, menu
 
 
-class WomenHome(ListView):
+class WomenHome(DataMixin, ListView):
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(context)
-        context['cats'] = Category.objects.all()
-        context['menu'] = menu
-        context['title'] = 'Главная страница'
-        context['cat_selected'] = 0
-        return context
+        user_context = self.get_user_context(title='Главная страница')
+        return dict(list(context.items()) + list(user_context.items()))
 
     def get_queryset(self):
         return Women.objects.filter(is_published=True)
@@ -41,16 +32,16 @@ def about(request):
     return render(request, 'women/about.html', context)
 
 
-class AddPage(CreateView):
+class AddPage(LoginRequiredMixin, DataMixin, CreateView):
     form_class = AddPostForm
     template_name = 'women/addpage.html'
     success_url = reverse_lazy('home')
+    raise_exception = True
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] = 'Добавление статьи'
-        return context
+        user_context = self.get_user_context(title='Добавление статьи')
+        return dict(list(context.items()) + list(user_context.items()))
 
 
 def contact(request):
@@ -61,7 +52,7 @@ def login(request):
     return HttpResponse("Авторизация")
 
 
-class WomenCategory(ListView):
+class WomenCategory(DataMixin, ListView):
     model = Women
     context_object_name = 'posts'
     template_name = 'women/index.html'
@@ -69,22 +60,17 @@ class WomenCategory(ListView):
 
     def get_queryset(self):
         queryset = Women.objects.filter(cat__slug=self.kwargs['cat_slug'], is_published=True)
-        print(self.kwargs)
         return queryset
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        print(context)
-        context['cats'] = Category.objects.all()
-        context['title'] = 'Категория -' + str(context['posts'][0].cat)
-        context['menu'] = menu
-        context['cat_selected'] = context['posts'][0].cat_id
-        print(context)
-        print(context['posts'][0])
-        return context
+        user_context = self.get_user_context(
+            title='Категория - ' + str(context['posts'][0].cat),
+            cat_selected=context['posts'][0].cat_id)
+        return dict(list(context.items()) + list(user_context.items()))
 
 
-class ShowPost(DetailView):
+class ShowPost(DataMixin, DetailView):
     model = Women
     template_name = 'women/post.html'
     context_object_name = 'post'
@@ -92,6 +78,5 @@ class ShowPost(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = context['post']
-        context['menu'] = menu
-        return context
+        user_context = self.get_user_context(title=context['post'])
+        return dict(list(context.items()) + list(user_context.items()))
