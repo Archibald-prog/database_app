@@ -5,7 +5,7 @@ from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import *
-from .forms import AddPostForm
+from .forms import AddPostForm, RegisterUserForm
 
 from modules.services.utils import DataMixin, menu
 
@@ -80,3 +80,14 @@ class ShowPost(DataMixin, DetailView):
         context = super().get_context_data(**kwargs)
         user_context = self.get_user_context(title=context['post'])
         return dict(list(context.items()) + list(user_context.items()))
+
+
+class RegisterUser(DataMixin, CreateView):
+    form_class = RegisterUserForm
+    template_name = 'women/register.html'
+    success_url = reverse_lazy('login')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title="Регистрация")
+        return dict(list(context.items()) + list(c_def.items()))
